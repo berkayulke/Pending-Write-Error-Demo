@@ -20,21 +20,19 @@ export class AppComponent implements OnInit {
 
   constructor(
     public afs: AngularFirestore
-  ) {
-    (window as any).fs = this.afs.firestore
-  }
+  ) { }
 
   ngOnInit() {
-    setTimeout(() => this.updateHasPendingWrites(), 1500);
+    this.updateHasPendingWrites()
 
     this.hugeDoc$ = this.afs.doc('docs/huge').valueChanges()
     this.smallDoc$ = this.afs.doc('docs/small').valueChanges()
 
     this.smallDocDb$ = this.afs.doc('docs/small').snapshotChanges().pipe(
+      //Make sure it is coming from database
       filter(snap => !snap.payload.metadata.hasPendingWrites && !snap.payload.metadata.fromCache),
       map(snap => snap.payload.data())
     )
-
   }
 
   saveDoc(type: 'huge' | 'small') {
@@ -66,6 +64,7 @@ export class AppComponent implements OnInit {
       .pipe(
         map(() => false),
         timeout(2_000),
+        //Catch timeout error and return true for indicating that there are pending writes
         catchError(() => of(true))
       )
       .subscribe(val => this.hasPendingWrites$.next(val))
