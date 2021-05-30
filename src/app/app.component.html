@@ -1,0 +1,45 @@
+<h2>Pending Write Error Demo</h2>
+
+<h3>What is the error?</h3>
+<ul>
+  <li>Saving a document larger than 1MB is not allowed on firestore.</li>
+  <li>But in case of an object with tons of small properties that add up to a huge size, firestore sdk won't save that
+    object, but it won't throw an error either.</li>
+  <li>After trying to save that document, none of your writes will reach firestore.</li>
+  <li>But since valueChanges emits local changes, it will emit a value that will never reach to server.</li>
+</ul>
+
+<h3>How did we notice that error?</h3>
+<ul>
+  <li>We had persistence enabled since day 1.</li>
+  <li>Some of our users reported that some of their changes aren't showing up on other's computers.</li>
+  <li>And after some time same users also reported that their save operations were never finishing.</li>
+  <li>After some long debugging sessions, we discovered that at one point, because of a bug, our app was trying to save
+    an object with around 1.5MB size.</li>
+  <li>And after a user causes that bug, none of the save operations reached other users.</li>
+  <li>But they were seeing their changes on their app.</li>
+  <li>And they were still able to see other's changes as well.</li>
+</ul>
+
+<h3>How to use that demo?</h3>
+<ul>
+  <li>On your first load your cache will be empty so you can save small documents without a problem.</li>
+  <li>Once you try to save a huge document that can't be saved to firestore, the promise won't resolve, but it won't
+    reject either.</li>
+  <li>At that point, all of your writes won't reach to firestore but valueChanges will emit those changes </li>
+  <li>And since the pending writes are cached too, restarting app doesn't fix the problem.</li>
+  <li>Only way to fix that as a user is to clear your cache from browser settings.</li>
+</ul>
+
+<button (click)="saveDoc('huge')">Try to save a huge document </button>
+<button (click)="saveDoc('small')">Try to save a small document </button>
+<button (click)="updateHasPendingWrites()">Update has pending writes</button>
+
+<p>Ongoing operation count: {{onGoingOperationCount}}</p>
+<p>Has pending writes: {{hasPendingWrites$ | async}}</p>
+
+<div>
+  <p>Small doc value changes: {{(smallDoc$ | async)?.value | json}}</p>
+  <p>Small doc on database : {{(smallDocDb$ | async)?.value | json}}</p>
+  <p>Huge doc value changes : {{(hugeDoc$ | async)?.value | json}}</p>
+</div>

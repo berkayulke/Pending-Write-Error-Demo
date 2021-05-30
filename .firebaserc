@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "pending-write-error": {
+      "hosting": {
+        "pending-write-error": [
+          "pending-write-error"
+        ]
+      }
+    }
+  }
+}
